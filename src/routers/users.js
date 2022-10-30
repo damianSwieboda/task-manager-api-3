@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const User = require('../models/users')
+const auth = require('../middleware/authorization')
 
 
 router.post('/users', async (req, res) => {
@@ -8,12 +9,22 @@ router.post('/users', async (req, res) => {
 
     try{
         const token = await user.generateAuthToken()
-        console.log(token)
 
         await user.save()
-        res.send({user, token})
+        res.status(201).send({user, token})
     }catch(error){
         res.status(400).send(error.message)
+    }
+})
+
+router.get('/user', auth, (req, res)=>{
+    try{
+    const user = req.user
+    res.send('xd')
+
+    } catch(error){
+        res.status(500).send(error.message)
+
     }
 })
 
