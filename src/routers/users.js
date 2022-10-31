@@ -23,7 +23,7 @@ router.post('/login', async (req, res) => {
         const user = await User.findByCredentials(req.body.email, req.body.password)
         const token = await user.generateAuthToken()
         user.save()
-        res.send({user, token})
+        res.status(201).send({user, token})
     } catch (error){
         res.status(400).send(error.message)
 
@@ -34,10 +34,11 @@ router.post('/login', async (req, res) => {
 router.get('/logout', auth,  async (req, res) => {
     try{
         const user = req.user
-
+        console.log('z api, tokens przed' + user.tokens)
         user.tokens = user.tokens.filter((token)=>{
             return token.token !== req.token
         })
+        console.log('z api, user po' + user.tokens)
 
         user.save()
         res.send('Sucessfully logout')
@@ -48,8 +49,8 @@ router.get('/logout', auth,  async (req, res) => {
 
 router.get('/user/me', auth, (req, res)=>{
     try{
-    const user = req.user
-    res.send(user)
+        const user = req.user
+        res.send(user)
     } catch(error){
         res.status(500).send(error.message)
 
