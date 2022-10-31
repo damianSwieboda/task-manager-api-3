@@ -23,22 +23,16 @@ router.post('/login', async (req, res) => {
         const user = await User.findByCredentials(req.body.email, req.body.password)
         const token = await user.generateAuthToken()
         user.save()
-        res.status(201).send({user, token})
+        res.send({user, token})
     } catch (error){
         res.status(400).send(error.message)
-
     }
-
 })
 
-router.get('/logout', auth,  async (req, res) => {
+router.post('/logout', auth,  async (req, res) => {
     try{
         const user = req.user
-        console.log('z api, tokens przed' + user.tokens)
-        user.tokens = user.tokens.filter((token)=>{
-            return token.token !== req.token
-        })
-        console.log('z api, user po' + user.tokens)
+        user.tokens = user.tokens.filter((token)=> token.token !== req.token)
 
         user.save()
         res.send('Sucessfully logout')
@@ -47,15 +41,56 @@ router.get('/logout', auth,  async (req, res) => {
     }
 })
 
-router.get('/user/me', auth, (req, res)=>{
+router.post('/logoutAll', auth, async (req, res) =>{
     try{
-        const user = req.user
-        res.send(user)
+        req.user.tokens = [];
+        await req.user.save()
+        res.send('Successfully logged out of all devices')
+    }catch(error){
+        res.status(500).send(error.message)
+    }
+})
+
+
+router.get('/users/me', auth, (req, res)=>{
+    try{
+        res.send(req.user)
     } catch(error){
         res.status(500).send(error.message)
 
     }
 })
 
+router.patch('/users', auth, async (req, res) => {
+    try{
+        const keys = Object.keys(req.body)
+        const avaibleUpdates = ['name', 'password', 'email']
+    
+        const isValidUpdate = keys.every(key => avaibleUpdates.includes(key)) // < --- double check
+        
+        if(!isValidUpdate){
+            throw new Error('Invalid update')
+        }
+    
+        keys.forEach(key=>req.user[key] = req.body[key])
+        
+        req.user.save()    
+        res.send(req.user)
+    }catch(error){
+        res.status(500).send(error.message)
+    }
+
+})
+
+router.delete('/users', auth, async (req, res)=>{
+    try{
+        const user = await User.findByIdAndDelete(req.user._id)
+
+        res.send(user)
+    }catch(error){
+        res.status(500).send(error.message)
+    }
+
+})
 
 module.exports = router

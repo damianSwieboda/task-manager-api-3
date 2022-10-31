@@ -34,14 +34,12 @@ userSchema.methods.generateAuthToken = async function () {
 
 userSchema.statics.findByCredentials = async function (email, password){
     const user = await User.findOne({ email })
-    console.log(' z model, user: ' + user)
+
     if(!user){
         throw new Error('Cannot login')
     }
+
     const isValidPassword = await bcrypt.compare(password, user.password)
-
-    console.log(' z model, isValid: ' + isValidPassword)
-
 
     if(!isValidPassword){
         throw new Error('Cannot login')
@@ -53,8 +51,6 @@ userSchema.statics.findByCredentials = async function (email, password){
 
 userSchema.pre('save', async function(next){
     const user = this
-    console.log(' z presave, user: ' + user)
-
 
     if(user.isModified('password')){
         user.password = await bcrypt.hash(user.password, 8)
