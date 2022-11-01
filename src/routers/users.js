@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const User = require('../models/users')
+const Task = require('../models/tasks')
 const auth = require('../middleware/authorization')
 const bcrypt = require('bcrypt');
 
@@ -14,6 +15,9 @@ router.post('/users', async (req, res) => {
         await user.save()
         res.status(201).send({user, token})
     }catch(error){
+        if(error.message.includes("E11000")){
+            error.message = 'User with this email already exists, try again with another email'
+        }
         res.status(400).send(error.message)
     }
 })
@@ -85,8 +89,9 @@ router.patch('/users', auth, async (req, res) => {
 router.delete('/users', auth, async (req, res)=>{
     try{
         const user = await User.findByIdAndDelete(req.user._id)
+        const tasks = await Task.deleteMany({owner: req.user._id})
 
-        res.send(user)
+        res.send({user, tasks})
     }catch(error){
         res.status(500).send(error.message)
     }

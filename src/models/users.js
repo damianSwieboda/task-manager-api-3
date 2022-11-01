@@ -1,19 +1,37 @@
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken');
+const validator = require('validator');
 const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Name required']
+        required: [true, 'Name required'],
+        minlength: 2,
+        trim: true,
     },
     email: {
         type: String,
-        required: [true, 'Email required']
+        required: [true, 'Email required'],
+        unique: true,
+        trim: true,
+        validate(value) {
+            if(!validator.isEmail(value)){
+                throw new Error('Email is invalid!')
+            }
+        }
+        
     },
     password: {
         type: String,
-        required: [true, 'Password required']
+        minlength: 6,
+        required: [true, 'Password required'],
+        trim: true,
+        validate(value){
+            if(value.includes('password')){
+                throw new Error('Password cannot includes "password" word')
+            }
+        }
     },
     tokens: [{
         token:{
