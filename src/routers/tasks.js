@@ -15,11 +15,8 @@ router.post('/tasks', auth, async (req, res) => {
 
 router.get('/tasks', auth, async (req, res) => {
     try{
-        const tasks = await Task.find({owner: req.user._id})
-        if(!tasks){
-            throw new Error('Cannot find tasks')
-        }
-        res.send(tasks)
+        await req.user.populate('tasks')
+        res.send(req.user.tasks)
     } catch(error){
         res.status(404).send(error.message)
     }

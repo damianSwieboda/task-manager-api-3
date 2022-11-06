@@ -56,8 +56,9 @@ router.post('/logoutAll', auth, async (req, res) =>{
 })
 
 
-router.get('/users/me', auth, (req, res)=>{
+router.get('/users/me', auth, async (req, res)=>{
     try{
+        const user = req.user
         res.send(req.user)
     } catch(error){
         res.status(500).send(error.message)
