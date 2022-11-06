@@ -3,8 +3,8 @@ const router = express.Router()
 const User = require('../models/users')
 const Task = require('../models/tasks')
 const auth = require('../middleware/authorization')
-const bcrypt = require('bcrypt');
-
+const multer  = require('multer')
+const path = require('path')
 
 
 router.post('/users', async (req, res) => {
@@ -96,6 +96,34 @@ router.delete('/users', auth, async (req, res)=>{
     }catch(error){
         res.status(500).send(error.message)
     }
+
+})
+
+const fileSize = 1000 * 1000 * 1
+const upload = multer({
+    limits:{
+        fileSize,
+    },
+    fileFilter: (req, file, cb) => {
+        const ext = path.extname(file.originalname)
+
+        if(ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg'){
+            return cb(new Error('Allowed types: jpg, png, jpeg'))
+        }
+        cb(undefined, true)
+    }
+
+})
+
+router.post('/userAvatar', auth, upload.single('avatar'), (req, res)=>{
+    try{
+        req.user.avatar = req.file.buffer.toString('base64')
+
+        req.user.save()
+        res.send('Avatar uploaded')
+    } catch(error){
+        res.status(500).send(error.message)
+    }    
 
 })
 
