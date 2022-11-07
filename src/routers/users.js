@@ -4,6 +4,7 @@ const User = require('../models/users')
 const Task = require('../models/tasks')
 const auth = require('../middleware/authorization')
 const multer  = require('multer')
+const { welcomeEmail } = require('../emails/messages')
 const path = require('path')
 
 
@@ -13,6 +14,7 @@ router.post('/users', async (req, res) => {
     try{
         const token = await user.generateAuthToken()
         await user.save()
+        welcomeEmail()
         res.status(201).send({user, token})
     }catch(error){
         if(error.message.includes("E11000")){
