@@ -76,14 +76,18 @@ router.patch('/users', auth, async (req, res) => {
         const isValidUpdate = keys.every(key => avaibleUpdates.includes(key)) // < --- double check
         
         if(!isValidUpdate){
-            throw new Error('Invalid update')
+            return res.status(400).send('Invalid update')
         }
     
         keys.forEach(key=>req.user[key] = req.body[key])
         
-        req.user.save()    
-        res.send(req.user)
-    }catch(error){
+        req.user.save((err, user) => {
+            if (err) {
+                return res.status(400).send('Invalid update')       
+            }
+            res.send(user)
+        });   
+    } catch(error){
         res.status(500).send(error.message)
     }
 

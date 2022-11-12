@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Name required'],
-        minlength: 2,
+        minLength: 2,
         trim: true,
     },
     email: {
@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        minlength: 6,
+        minLength: 6,
         required: [true, 'Password required'],
         trim: true,
         validate(value){
@@ -64,7 +64,7 @@ userSchema.methods.toJSON = function (){
 
 userSchema.methods.generateAuthToken = async function () {
     const user = this
-    const token = jwt.sign({ _id: user._id.toString() }, 'privateKeyXYZ')
+    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
 
     user.tokens = user.tokens.concat({ token })
     await user.save()
